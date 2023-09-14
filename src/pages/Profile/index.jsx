@@ -30,14 +30,16 @@ export function Profile() {
     const [avatarFile, setAvatarFile] = useState(null);
 
     async function handleUpdate() {
-        const user = {
+        const updated = {
             name,
             email,
             old_password: passwordOld,
-            new_password: passwordNew,
+            password: passwordNew,
         };
 
-        await updateProfile({ user, avatarFile });
+        const userUpdated = Object.assign(user, updated);
+
+        await updateProfile({ user: userUpdated, avatarFile });
     }
 
     function handleChangeAvatar(event) {
@@ -88,17 +90,17 @@ export function Profile() {
                 ></Input>
 
                 <Input
-                    placeholder="Senha atual"
-                    type="password"
-                    icon={FiLock}
-                    onChange={(e) => setPasswordOld(e.target.value)}
-                ></Input>
-
-                <Input
                     placeholder="Nova senha"
                     type="password"
                     icon={FiLock}
                     onChange={(e) => setPasswordNew(e.target.value)}
+                ></Input>
+
+                <Input
+                    placeholder="Senha atual"
+                    type="password"
+                    icon={FiLock}
+                    onChange={(e) => setPasswordOld(e.target.value)}
                 ></Input>
 
                 <Button title="Salvar" onClick={handleUpdate}></Button>

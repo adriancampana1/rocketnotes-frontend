@@ -1,4 +1,6 @@
+import { useState, useEffect } from 'react';
 import { Container, Links, Content } from './styles';
+import { useFetcher, useNavigate, useParams } from 'react-router-dom';
 
 import { Header } from '../../components/Header';
 import { Button } from '../../components/Button';
@@ -6,42 +8,79 @@ import { Section } from '../../components/Section';
 import { Tag } from '../../components/Tag';
 import { ButtonText } from '../../components/ButtonText';
 
+import { api } from '../../services/api';
+
 export function Details() {
+    const [data, setData] = useState(null);
+
+    const params = useParams();
+    const navigate = useNavigate();
+
+    function handleBack() {
+        navigate(-1);
+    }
+
+    async function handleRemove() {
+        const confirm = window.confirm('Deseja realmente remover a nota?');
+
+        if (confirm) {
+            await api.delete(`/notes/${params.id}`);
+            navigate('/');
+        }
+    }
+
+    useEffect(() => {
+        async function fetchNote() {
+            const response = await api.get(`/notes/${params.id}`);
+
+            setData(response.data);
+        }
+
+        fetchNote();
+    }, []);
     return (
         <Container>
             <Header></Header>
 
-            <main>
-                <Content>
-                    <ButtonText title="Excluir nota"></ButtonText>
+            {data && (
+                <main>
+                    <Content>
+                        <ButtonText
+                            title="Excluir nota"
+                            onClick={handleRemove}
+                        ></ButtonText>
 
-                    <h1>Introdução ao React</h1>
-                    <p>
-                        Lorem ipsum, dolor sit amet consectetur adipisicing
-                        elit. Necessitatibus corrupti voluptas porro, aspernatur
-                        impedit in possimus labore sit? Molestias deserunt porro
-                        aliquid animi pariatur dolorem cupiditate dolores
-                        recusandae quas quae.
-                    </p>
-                    <Section title="Links úteis">
-                        <Links>
-                            <li>
-                                <a href="#">https://www.rocketseat.com.br</a>
-                            </li>
-                            <li>
-                                <a href="#">https://www.rocketseat.com.br</a>
-                            </li>
-                        </Links>
-                    </Section>
+                        <h1>{data.title}</h1>
+                        <p>{data.description}</p>
+                        {data.links && (
+                            <Section title="Links úteis">
+                                <Links>
+                                    {data.links.map((link) => (
+                                        <li key={String(link.id)}>
+                                            <a href={link.url} target="_blank">
+                                                {link.url}
+                                            </a>
+                                        </li>
+                                    ))}
+                                </Links>
+                            </Section>
+                        )}
 
-                    <Section title="Marcadores">
-                        <Tag title="Express"></Tag>
-                        <Tag title="Node.js"></Tag>
-                    </Section>
+                        {data.tags && (
+                            <Section title="Marcadores">
+                                {data.tags.map((tag) => (
+                                    <Tag
+                                        key={String(tag.id)}
+                                        title={tag.name}
+                                    ></Tag>
+                                ))}
+                            </Section>
+                        )}
 
-                    <Button title="Voltar"></Button>
-                </Content>
-            </main>
+                        <Button title="Voltar" onClick={handleBack}></Button>
+                    </Content>
+                </main>
+            )}
         </Container>
     );
 }
